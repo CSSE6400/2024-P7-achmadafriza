@@ -14,12 +14,40 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     restart: always
-    volumes:
-      - ./todo:/app/todo
     environment:
-      SQLALCHEMY_DATABASE_URI: postgresql://administrator:verySecretPassword@database:5432/todo
+      # SQLALCHEMY_DATABASE_URI: postgresql://administrator:verySecretPassword@database:5432/todo
+      # CELERY_BROKER_URL: redis://redis:6379 
+      CELERY_RESULT_BACKEND: db+postgresql://administrator:verySecretPassword@database:5432/todo
+      CELERY_BROKER_URL: sqs://
     ports:
       - "6400:6400"
+    volumes: 
+      - ./todo:/app/todo 
+      - ./credentials:/root/.aws/credentials 
     depends_on:
       - database
+      - redis
+
+  redis: 
+    image: redis:latest 
+    restart: always 
+    ports: 
+      - "6379:6379"
+  
+  worker: 
+    build: 
+      context: . 
+      dockerfile: Dockerfile.dev 
+    restart: always 
+    environment: 
+      # CELERY_BROKER_URL: redis://redis:6379 
+      # CELERY_RESULT_BACKEND: redis://redis:6379 
+      CELERY_RESULT_BACKEND: db+postgresql://administrator:verySecretPassword@database:5432/todo
+      CELERY_BROKER_URL: sqs://
+    volumes: 
+      - ./todo:/app/todo 
+      - ./credentials:/root/.aws/credentials 
+    command: poetry run celery --app todo.tasks.ical worker --loglevel=info
+    depends_on:
+      - redis
 
