@@ -5,3 +5,5 @@ docker run --rm -it --env-file .env ghcr.io/csse6400/queue:main --name "csse6400
 # FIFO
 docker run --rm -it --env-file .env ghcr.io/csse6400/queue:main --name "csse6400_prac.fifo" --client-name "Client 1"
 docker run --rm -it --env-file .env ghcr.io/csse6400/queue:main --name "csse6400_prac.fifo" --client-name "hello" --receive
+
+curl -X POST http://localhost:6400/api/v1/todos/ical
